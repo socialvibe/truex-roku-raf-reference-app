@@ -46,7 +46,8 @@ sub onFlowEvent(event as object)
     ? "TRUE[X] >>> MainScene::onFlowEvent(trigger=";data.trigger;")"
 
     if data.trigger = "playButtonSelected" then
-        showFlow("ContentFlow")
+        ' showFlow("ContentFlow")
+        showFlow("RafContentFlow")
     else if data.trigger = "cancelStream" then
         showFlow("DetailsFlow")
     else if data.trigger = "streamInfoReceived" then

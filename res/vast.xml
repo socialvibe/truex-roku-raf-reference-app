@@ -1,0 +1,137 @@
+<adResponse networkId="83583" version="1">
+  <visitor />
+  <ads>
+    <ad adId="1" adUnit="3">
+      <creatives>
+        <creative
+          adUnit="video"
+          baseUnit="video"
+          creativeId="12"
+          duration="10.0"
+        >
+          <creativeRenditions>
+            <creativeRendition
+              creativeApi="None"
+              creativeRenditionId="1"
+              height="360"
+              preference="0"
+              width="640"
+            >
+              <asset
+                bytes="1014433"
+                contentType="video/mp4-h264"
+                mimeType="video/mp4"
+                name="Test Ad 1"
+                url="http://devtools.web.roku.com/samples/test_ad_1.mp4"
+              />
+            </creativeRendition>
+          </creativeRenditions>
+        </creative>
+      </creatives>
+      <AdParameters id="adaptv">            <![CDATA[ debug=true&html5=true ]]></AdParameters>
+    </ad>
+    <ad adId="2" adUnit="4">
+      <creatives>
+        <creative
+          adUnit="video"
+          baseUnit="video"
+          creativeId="22"
+          duration="10.0"
+        >
+          <creativeRenditions>
+            <creativeRendition
+              creativeApi="None"
+              creativeRenditionId="2"
+              height="360"
+              preference="0"
+              width="640"
+            >
+              <asset
+                bytes="1014433"
+                contentType="video/mp4-h264"
+                id="2"
+                mimeType="video/mp4"
+                name="Test Ad 2"
+                url="http://devtools.web.roku.com/samples/test_ad_2.mp4"
+              />
+            </creativeRendition>
+          </creativeRenditions>
+        </creative>
+      </creatives>
+    </ad>
+    <ad adId="3" adUnit="5">
+      <creatives>
+        <creative
+          adUnit="video"
+          baseUnit="video"
+          creativeId="32"
+          duration="10.0"
+        >
+          <creativeRenditions>
+            <creativeRendition
+              creativeApi="None"
+              creativeRenditionId="3"
+              height="360"
+              preference="0"
+              width="640"
+            >
+              <asset
+                bytes="1014433"
+                contentType="video/mp4-h264"
+                id="3"
+                mimeType="video/mp4"
+                name="Test Ad 3"
+                url="http://devtools.web.roku.com/samples/test_ad_3.mp4"
+              />
+            </creativeRendition>
+          </creativeRenditions>
+        </creative>
+      </creatives>
+    </ad>
+  </ads>
+  <siteSection customId="sample_channel">
+    <videoPlayer>
+      <videoAsset customId="150926">
+        <adSlots>
+          <temporalAdSlot
+            adUnit="Standard Pre"
+            customId="0.0.0.380260307"
+            source="generated"
+            timePosition="0"
+            timePositionClass="preroll"
+          >
+            <selectedAds>
+              <adReference
+                adId="1"
+                creativeId="12"
+                creativeRenditionId="1"
+                replicaId="0"
+              ></adReference>
+            </selectedAds>
+          </temporalAdSlot>
+          <temporalAdSlot
+            adUnit="midroll"
+            customId="midroll0"
+            timePosition="120"
+            timePositionClass="midroll"
+          >
+            <selectedAds>
+              <adReference
+                adId="2"
+                creativeId="22"
+                creativeRenditionId="2"
+                replicaId="0"
+              ></adReference>
+              <adReference
+                adId="3"
+                creativeId="32"
+                creativeRenditionId="3"
+                replicaId="0"
+              ></adReference>
+            </selectedAds>
+          </temporalAdSlot>
+        </adSlots>
+      </videoAsset>
+    </videoPlayer>
+  </siteSection>
+</adResponse>
