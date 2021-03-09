@@ -7,6 +7,7 @@
     <interface>
         <field id="video" type="node" />
         <field id="adFacade" type="node" />
+        <field id="cleanup" type="boolean" onChange="onCleanup"/>
         
         <field id="playbackEvent" type="assocarray" /> <!-- Events to bubble up to scene -->
     </interface>

@@ -8,6 +8,7 @@ end sub
 sub setup() 
   m.port = createObject("roMessagePort")
   m.adFacade = m.top.adFacade
+  m.skipAds = false
 
   setupVideo()
   setupRaf()
@@ -56,7 +57,7 @@ sub setupRaf()
   raf.setAdUrl(adUrl)
   
   m.adPods = raf.getAds()
-  ? "allAds:"  formatJson(m.adPods)
+  ' ? "allAds:"  formatJson(m.adPods)
 
   m.raf = raf
 end sub
@@ -72,7 +73,6 @@ sub startPlayback()
     msgType = type(msg)
 
     ' ? "event type:" msgType
-
     if msgType = "roSGNodeEvent"
       field = msg.getField()
       ? "roSGNodeEvent msg.getField()" field
@@ -81,6 +81,7 @@ sub startPlayback()
       else if field = "event" then
         onTrueXEvent(msg)
       end if
+      ' TODO: Video complete event
     end if
   end while
 end sub
@@ -117,28 +118,32 @@ sub onTruexEvent(event)
   }
 
   ' TODO: Various event formats
+  ' TODO: Combine statements into one if statement.  Or something else like SWITCH?
+
+  if eventType = types.ADFREEPOD
+    m.skipAds = true
+  end if
+
+  if eventType = types.ADCOMPLETED
+    restorePlayback()
+  end if
 
   if eventType = types.USERCANCEL OR eventType = types.OPTOUT
-    ' TODO: Clean up truex
-    ' TODO: Switch to regular ads
-    ' TODO: Switch to playback (probably not needed since ads will take care of that)
-
-    ' m.truexPod.viewed = true ' // This should just go to the next ad break instead.  But to fix the RAF event behaviour, do this for now.
-    ' TODO: Remove.  Temporary to improve developer experience
-    m.videoPlayer.visible = true
-    m.videoPlayer.control = "play"
-    m.videoPlayer.setFocus(true)
+    cleanUpAdRenderer()
+    restorePlayback()
   end if
 
   if eventType = types.USERCANCELSTREAM
-    cleanUpTruex()
+    cleanUpAdRenderer()
     m.top.playbackEvent = { trigger: "cancelStream" } ' Might want to change this API since this is the flows API to the scene
   end if
 end sub
 
-sub cleanUpTruex()
+sub cleanUpAdRenderer()
+  ? "TRUE[X] >>> PlaybackTask::cleanUpAdRenderer(): "
   if m.adRenderer <> invalid then
       m.adRenderer.SetFocus(false)
+      m.adRenderer.unobserveFieldScoped("event")
       m.top.removeChild(m.adRenderer)
       m.adRenderer.visible = false
       m.adRenderer = invalid
@@ -148,31 +153,39 @@ end sub
 sub handleAds(ads, position)
   ' ? "HandleAds:" formatJSON(ads)
   if ads <> invalid AND ads.ads.count() > 0
-    currentPod = getCurrentAd(ads, position)  ' Probably don't need this since its not stitched
+    firstAd = ads.ads[0] 'Assume truex can only be first ad
+
+    if m.skipAds then
+      ads.viewed = true
+
+      ' Show choice card if needed?
+      return
+    end if
+
 
     ' TODO: Figure out how to get metadata into the Roku ad parser.  AdParameters?
     ' Hacky conditional for now
-    if currentPod.streams <> invalid AND currentPod.creativeid = "truex-test-id"
-      if m.truexPod <> invalid then return
+    if firstAd.streams <> invalid AND firstAd.creativeid = "truex-test-id"
+      if m.truexAd <> invalid then return ' Hack
 
-      url = currentPod.streams[0].url
-      m.truexPod = currentPod
-      m.truexPod.renderSequence = ads.renderSequence
+      url = firstAd.streams[0].url
+      m.truexAd = firstAd
+      m.truexAd.renderSequence = ads.renderSequence
 
       if url.instr(0, "pkg:/") >= 0
         ' See if Roku parses this on their side for real paths
         rawJson = ReadAsciiFile(url).trim()
         truexAd = ParseJson(rawJson)
         truexAd.placement_hash = "74fca63c733f098340b0a70489035d683024440d" 'Placeholder
-        m.truexPod.params = truexAd
+        m.truexAd.params = truexAd
       else
-        m.truexPod.params = {
+        m.truexAd.params = {
           vast_config_url: url,
           placement_hash: "74fca63c733f098340b0a70489035d683024440d" 'Placeholder
         }
       end if
 
-      ads.ads.delete(0)
+      ads.ads.delete(0) ' Removes it from future ad handling for raf
 
       playTrueXAd()
     else ' Non-TrueX ads
@@ -182,28 +195,18 @@ sub handleAds(ads, position)
       ' Takes thread ownership until complete or exit
       watchedAd = m.raf.showAds(ads, invalid, m.adFacade)
 
-      m.videoPlayer.visible = true
-      m.videoPlayer.control = "play"
-      m.videoPlayer.setFocus(true)
+      restorePlayback()
     end if
   end if
 end sub
 
-function getCurrentAd(ads, position) as Object
-  ' ? "ads: " ads
-  for each ad in ads.ads
-    ? position " -- " ads.renderTime " -- "  ad
-    if position < (ads.renderTime + ad.duration) then return ad
-  end for
-
-  return invalid
-end function
-
-sub playTrueXAd()
-  launchTruexAd()
+sub restorePlayback()
+    m.videoPlayer.visible = true
+    m.videoPlayer.control = "play"
+    m.videoPlayer.setFocus(true)
 end sub
 
-sub launchTruexAd()
+sub playTrueXAd()
     ? "TRUE[X] >>> ContentFlow::launchTruexAd() - instantiating TruexAdRenderer ComponentLibrary..."
 
     ' instantiate TruexAdRenderer and register for event updates
@@ -213,9 +216,9 @@ sub launchTruexAd()
     ' use the companion ad data to initialize the true[X] renderer
     tarInitAction = {
       type: "init",
-      adParameters: m.truexPod.params,
+      adParameters: m.truexAd.params,
       supportsUserCancelStream: true, ' enables cancelStream event types, disable if Channel does not support
-      slotType: ucase(m.truexPod.rendersequence),
+      slotType: ucase(m.truexAd.rendersequence),
       logLevel: 1, ' Optional parameter, set the verbosity of true[X] logging, from 0 (mute) to 5 (verbose), defaults to 5
       channelWidth: 1920, ' Optional parameter, set the width in pixels of the channel's interface, defaults to 1920
       channelHeight: 1080 ' Optional parameter, set the height in pixels of the channel's interface, defaults to 1080
@@ -230,4 +233,8 @@ sub launchTruexAd()
     m.adRenderer.action = { type: "start" }
     m.adRenderer.focusable = true
     m.adRenderer.SetFocus(true)
+end sub
+
+sub onCleanup()
+  cleanUpAdRenderer()
 end sub
