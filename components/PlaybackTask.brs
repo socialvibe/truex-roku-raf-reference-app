@@ -118,7 +118,7 @@ sub onTruexEvent(event)
 
   ' TODO: Various event formats
 
-  if eventType = types.USERCANCELSTREAM OR eventType = types.USERCANCEL
+  if eventType = types.USERCANCEL
     ' TODO: Clean up truex
     ' TODO: Switch to regular ads
     ' TODO: Switch to playback (probably not needed since ads will take care of that)
@@ -128,25 +128,48 @@ sub onTruexEvent(event)
     m.videoPlayer.visible = true
     m.videoPlayer.control = "play"
   end if
+
+  if eventType = types.USERCANCELSTREAM
+    cleanUpTruex()
+    m.top.playbackEvent = { trigger: "cancelStream" } ' Might want to change this API since this is the flows API to the scene
+  end if
+end sub
+
+sub cleanUpTruex()
+  if m.adRenderer <> invalid then
+      m.adRenderer.SetFocus(false)
+      m.top.removeChild(m.adRenderer)
+      m.adRenderer.visible = false
+      m.adRenderer = invalid
+  end if
 end sub
 
 sub handleAds(ads)
   ? "HandleAds:" formatJSON(ads)
   if ads <> invalid AND ads.ads.count() > 0
     firstPod = ads.ads[0]
-    
+  
     ' TODO: Figure out how to get metadata into the Roku ad parser.  AdParameters?
     ' Hacky conditional for now.  
     if firstPod.streams <> invalid AND firstPod.creativeid = "truex-test-id"
       if m.truexPod <> invalid then return
+
+      url = firstPod.streams[0].url
       m.truexPod = ads
 
-      ' TODO: Add proper logic for grabbing the file and/or if its not grabbed by Roku
-      rawJson = ReadAsciiFile("pkg:/res/truex-payload-refapp.json").trim()
-      truexAd = ParseJson(rawJson)
-      truexAd.decodedData = "74fca63c733f098340b0a70489035d683024440d"
+      if url.instr(0, "pkg:/") >= 0
+        ' See if Roku parses this on their side for real paths
+        rawJson = ReadAsciiFile(url).trim()
+        truexAd = ParseJson(rawJson)
+        truexAd.placement_hash = "74fca63c733f098340b0a70489035d683024440d" 'Placeholder
+        m.truexPod.params = truexAd
+      else
+        m.truexPod.params = {
+          vast_config_url: url,
+          placement_hash: "74fca63c733f098340b0a70489035d683024440d" 'Placeholder
+        }
+      end if
 
-      m.truexPod.params = truexAd
       playTrueXAd()
     else ' Non-TrueX ads
       m.videoPlayer.control = "stop"

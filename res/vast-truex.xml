@@ -22,7 +22,7 @@
                 contentType="video/mp4-h264"
                 mimeType="video/mp4"
                 name="Test Ad 1"
-                url="http://devtools.web.roku.com/samples/test_ad_1.mp4"
+                url="pkg:/res/truex-payload-refapp.json"
               />
             </creativeRendition>
           </creativeRenditions>
