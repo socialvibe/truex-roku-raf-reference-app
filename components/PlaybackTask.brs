@@ -51,8 +51,8 @@ sub setupRaf()
   raf.SetDebugOutput(false) 'debugging
   raf.SetAdPrefs(false)
 
-  ' adUrl = "pkg:/res/vast.xml"
-  adUrl = "pkg:/res/vast-truex.xml"
+  ' adUrl = "pkg:/res/vast.xml"  ' Regular Ads
+  adUrl = "pkg:/res/vast-truex.xml"  ' TrueX preroll + Ads
   raf.setAdUrl(adUrl)
   
   m.adPods = raf.getAds()
@@ -75,7 +75,7 @@ sub startPlayback()
 
     if msgType = "roSGNodeEvent"
       field = msg.getField()
-      ? "roSGNodeEvent" field
+      ? "roSGNodeEvent msg.getField()" field
       if field = "position" then 
         onPositionChanged(msg)
       else if field = "event" then
@@ -90,7 +90,7 @@ sub onPositionChanged(event)
   ? "onPositionChanged: " position
 
   ads = m.raf.getAds(event)
-  handleAds(ads)
+  handleAds(ads, position)
 end sub
 
 sub onTruexEvent(event)
@@ -118,15 +118,16 @@ sub onTruexEvent(event)
 
   ' TODO: Various event formats
 
-  if eventType = types.USERCANCEL
+  if eventType = types.USERCANCEL OR eventType = types.OPTOUT
     ' TODO: Clean up truex
     ' TODO: Switch to regular ads
     ' TODO: Switch to playback (probably not needed since ads will take care of that)
 
-    m.truexPod.viewed = true ' // This should just go to the next ad break instead.  But to fix the RAF event behaviour, do this for now.
+    ' m.truexPod.viewed = true ' // This should just go to the next ad break instead.  But to fix the RAF event behaviour, do this for now.
     ' TODO: Remove.  Temporary to improve developer experience
     m.videoPlayer.visible = true
     m.videoPlayer.control = "play"
+    m.videoPlayer.setFocus(true)
   end if
 
   if eventType = types.USERCANCELSTREAM
@@ -144,18 +145,19 @@ sub cleanUpTruex()
   end if
 end sub
 
-sub handleAds(ads)
-  ? "HandleAds:" formatJSON(ads)
+sub handleAds(ads, position)
+  ' ? "HandleAds:" formatJSON(ads)
   if ads <> invalid AND ads.ads.count() > 0
-    firstPod = ads.ads[0]
-  
+    currentPod = getCurrentAd(ads, position)  ' Probably don't need this since its not stitched
+
     ' TODO: Figure out how to get metadata into the Roku ad parser.  AdParameters?
-    ' Hacky conditional for now.  
-    if firstPod.streams <> invalid AND firstPod.creativeid = "truex-test-id"
+    ' Hacky conditional for now
+    if currentPod.streams <> invalid AND currentPod.creativeid = "truex-test-id"
       if m.truexPod <> invalid then return
 
-      url = firstPod.streams[0].url
-      m.truexPod = ads
+      url = currentPod.streams[0].url
+      m.truexPod = currentPod
+      m.truexPod.renderSequence = ads.renderSequence
 
       if url.instr(0, "pkg:/") >= 0
         ' See if Roku parses this on their side for real paths
@@ -170,16 +172,32 @@ sub handleAds(ads)
         }
       end if
 
+      ads.ads.delete(0)
+
       playTrueXAd()
     else ' Non-TrueX ads
       m.videoPlayer.control = "stop"
       m.videoPlayer.visible = false
-      watchedAd = m.raf.showAds(ads, invalid, m.adFacade)  ' Takes thread ownership until complete
+
+      ' Takes thread ownership until complete or exit
+      watchedAd = m.raf.showAds(ads, invalid, m.adFacade)
+
       m.videoPlayer.visible = true
       m.videoPlayer.control = "play"
+      m.videoPlayer.setFocus(true)
     end if
   end if
 end sub
+
+function getCurrentAd(ads, position) as Object
+  ' ? "ads: " ads
+  for each ad in ads.ads
+    ? position " -- " ads.renderTime " -- "  ad
+    if position < (ads.renderTime + ad.duration) then return ad
+  end for
+
+  return invalid
+end function
 
 sub playTrueXAd()
   launchTruexAd()

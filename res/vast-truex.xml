@@ -106,6 +106,12 @@
                 creativeRenditionId="1"
                 replicaId="0"
               ></adReference>
+              <adReference
+                adId="2"
+                creativeId="22"
+                creativeRenditionId="2"
+                replicaId="0"
+              ></adReference>
             </selectedAds>
           </temporalAdSlot>
           <temporalAdSlot
