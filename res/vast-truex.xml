@@ -87,6 +87,34 @@
         </creative>
       </creatives>
     </ad>
+    <ad adId="4" adUnit="8">
+      <creatives>
+        <creative
+          adUnit="video"
+          baseUnit="video"
+          creativeId="truex-test-id"
+          duration="1.0"
+        >
+          <creativeRenditions>
+            <creativeRendition
+              creativeApi="None"
+              creativeRenditionId="1"
+              height="360"
+              preference="0"
+              width="640"
+            >
+              <asset
+                bytes="1014433"
+                contentType="video/mp4-h264"
+                mimeType="video/mp4"
+                name="Test Ad 1"
+                url="pkg:/res/skip_card_config.json"
+              />
+            </creativeRendition>
+          </creativeRenditions>
+        </creative>
+      </creatives>
+    </ad>
   </ads>
   <siteSection customId="sample_channel">
     <videoPlayer>
@@ -117,10 +145,16 @@
           <temporalAdSlot
             adUnit="midroll"
             customId="midroll0"
-            timePosition="30"
+            timePosition="15"
             timePositionClass="midroll"
           >
             <selectedAds>
+              <adReference
+                adId="4"
+                creativeId="truex-test-id"
+                creativeRenditionId="1"
+                replicaId="0"
+              ></adReference>
               <adReference
                 adId="2"
                 creativeId="22"

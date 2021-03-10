@@ -9,6 +9,7 @@ sub setup()
   m.port = createObject("roMessagePort")
   m.adFacade = m.top.adFacade
   m.skipAds = false
+  m.isInTruexAd = false
 
   setupVideo()
   setupRaf()
@@ -33,10 +34,6 @@ sub setupVideo()
   m.videoPlayer.content = videoContent
   m.videoPlayer.SetFocus(true)
   m.videoPlayer.visible = true
-  ' m.videoPlayer.retrievingBar.visible = false
-  ' m.videoPlayer.bufferingBar.visible = false
-  ' m.videoPlayer.retrievingBarVisibilityAuto = false
-  ' m.videoPlayer.bufferingBarVisibilityAuto = false
   m.videoPlayer.observeFieldScoped("position", m.port)
   m.videoPlayer.EnableCookies()
 end sub
@@ -47,7 +44,6 @@ sub setupRaf()
   raf.enableAdMeasurements(true)
   raf.setContentGenre("Entertainment")
   raf.setContentId("TrueXSample")
-  ' raf.setContentLength(600)
 
   raf.SetDebugOutput(false) 'debugging
   raf.SetAdPrefs(false)
@@ -57,16 +53,17 @@ sub setupRaf()
   raf.setAdUrl(adUrl)
   
   m.adPods = raf.getAds()
-  ' ? "allAds:"  formatJson(m.adPods)
 
   m.raf = raf
 end sub
 
 sub startPlayback()
   ? "TRUE[X] >>> startPlayback()"
-  m.videoPlayer.control = "play"
 
-  ' TODO: Handle the preroll case explicitly
+  checkPreroll() ' Currently doesn't handle secondary ad flows (eg. skip choice card).  Requires letting playback to handle
+  if NOT m.isInTruexAd
+    m.videoPlayer.control = "play" 'TODO: Should this go in the flow?
+  end if
 
   while(true)
     msg = Wait(0, m.port)
@@ -86,12 +83,24 @@ sub startPlayback()
   end while
 end sub
 
+sub checkPreroll()
+  ads = m.raf.getAds()
+  if ads = invalid then return
+
+  for each adPod in ads
+    if adPod.rendersequence = "preroll"
+      handleAds(adPod)
+      exit for
+    end if
+  end for
+end sub
+
 sub onPositionChanged(event)
   position = event.getData()
-  ? "onPositionChanged: " position
+  ' ? "onPositionChanged: " position
 
   ads = m.raf.getAds(event)
-  handleAds(ads, position)
+  handleAds(ads)
 end sub
 
 sub onTruexEvent(event)
@@ -120,6 +129,9 @@ sub onTruexEvent(event)
   ' TODO: Various event formats
   ' TODO: Combine statements into one if statement.  Or something else like SWITCH?
 
+  if eventType = types.SKIPCARDSHOWN
+  end if
+
   if eventType = types.ADFREEPOD
     m.skipAds = true
   end if
@@ -128,7 +140,7 @@ sub onTruexEvent(event)
     restorePlayback()
   end if
 
-  if eventType = types.USERCANCEL OR eventType = types.OPTOUT
+  if eventType = types.USERCANCEL OR eventType = types.OPTOUT OR eventType = types.NOADSAVAILABLE OR eventType = types.ADERROR
     cleanUpAdRenderer()
     restorePlayback()
   end if
@@ -139,24 +151,13 @@ sub onTruexEvent(event)
   end if
 end sub
 
-sub cleanUpAdRenderer()
-  ? "TRUE[X] >>> PlaybackTask::cleanUpAdRenderer(): "
-  if m.adRenderer <> invalid then
-      m.adRenderer.SetFocus(false)
-      m.adRenderer.unobserveFieldScoped("event")
-      m.top.removeChild(m.adRenderer)
-      m.adRenderer.visible = false
-      m.adRenderer = invalid
-  end if
-end sub
-
-sub handleAds(ads, position)
-  ' ? "HandleAds:" formatJSON(ads)
+sub handleAds(ads)
   if ads <> invalid AND ads.ads.count() > 0
     firstAd = ads.ads[0] 'Assume truex can only be first ad
 
     if m.skipAds then
       ads.viewed = true
+      m.skipAds = false
 
       ' Show choice card if needed?
       return
@@ -166,24 +167,14 @@ sub handleAds(ads, position)
     ' TODO: Figure out how to get metadata into the Roku ad parser.  AdParameters?
     ' Hacky conditional for now
     if firstAd.streams <> invalid AND firstAd.creativeid = "truex-test-id"
-      if m.truexAd <> invalid then return ' Hack
-
       url = firstAd.streams[0].url
       m.truexAd = firstAd
       m.truexAd.renderSequence = ads.renderSequence
 
-      if url.instr(0, "pkg:/") >= 0
-        ' See if Roku parses this on their side for real paths
-        rawJson = ReadAsciiFile(url).trim()
-        truexAd = ParseJson(rawJson)
-        truexAd.placement_hash = "74fca63c733f098340b0a70489035d683024440d" 'Placeholder
-        m.truexAd.params = truexAd
-      else
-        m.truexAd.params = {
-          vast_config_url: url,
-          placement_hash: "74fca63c733f098340b0a70489035d683024440d" 'Placeholder
-        }
-      end if
+      m.truexAd.params = {
+        vast_config_url: url,
+        placement_hash: "74fca63c733f098340b0a70489035d683024440d" 'Placeholder
+      }
 
       ads.ads.delete(0) ' Removes it from future ad handling for raf
 
@@ -233,8 +224,21 @@ sub playTrueXAd()
     m.adRenderer.action = { type: "start" }
     m.adRenderer.focusable = true
     m.adRenderer.SetFocus(true)
+
+    m.isInTruexAd = true
 end sub
 
 sub onCleanup()
   cleanUpAdRenderer()
+end sub
+
+sub cleanUpAdRenderer()
+  ? "TRUE[X] >>> PlaybackTask::cleanUpAdRenderer(): "
+  if m.adRenderer <> invalid then
+      m.adRenderer.SetFocus(false)
+      m.adRenderer.unobserveFieldScoped("event")
+      m.top.removeChild(m.adRenderer)
+      m.adRenderer.visible = false
+      m.adRenderer = invalid
+  end if
 end sub
