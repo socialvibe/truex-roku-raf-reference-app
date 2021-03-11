@@ -3,12 +3,16 @@
 
 <component name="PlaybackTask" extends="Task">
     <script type="text/brightscript" uri="pkg:/components/PlaybackTask.brs"/>
+        <script type="text/brightscript" uri="pkg:/source/Utils.brs"/>
 
     <interface>
+        <!-- Read -->
         <field id="video" type="node" />
+        <field id="adUrl" type="string" />
         <field id="adFacade" type="node" />
-        <field id="cleanup" type="boolean" onChange="onCleanup"/>
-        
+        <field id="exitPlayback" type="boolean" onChange="exitPlayback"/>
+
+        <!-- Write -->
         <field id="playbackEvent" type="assocarray" /> <!-- Events to bubble up to scene -->
     </interface>
 </component>

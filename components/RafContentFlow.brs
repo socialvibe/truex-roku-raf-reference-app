@@ -30,8 +30,7 @@ function onKeyEvent(key as string, press as boolean) as boolean
         ? "TRUE[X] >>> ContentFlow::onKeyEvent() - back pressed while content is playing, requesting stream cancel..."
 
         if m.videoPlayer <> invalid then m.videoPlayer.control = "stop"
-        m.rafTask.cleanup = true
-        m.top.event = { trigger: "cancelStream" }
+        m.rafTask.exitPlayback = true
     end if
     return press
 end function
