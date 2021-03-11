@@ -34,7 +34,7 @@ sub setupVideo()
   videoPlayer.content = videoContent
   videoPlayer.SetFocus(true)
   videoPlayer.visible = true
-  videoPlayer.observeField("position", "onPositionChanged")
+  videoPlayer.observeField("position", m.port)
   videoPlayer.EnableCookies()
 
   m.videoPlayer = videoPlayer
