@@ -17,7 +17,7 @@ sub initRafTask()
         rafTask = CreateObject("roSGNode", "PlaybackTask")
         rafTask.video = m.videoPlayer
         rafTask.adFacade = m.top.findNode("adFacade")
-        rafTask.observeField("playbackEvent", "onPlaybackTaskEvent")
+        rafTask.observeField("playerDisposed", "onPlaybackTaskEvent")
 
         m.rafTask = rafTask
         rafTask.control = "run"
@@ -28,13 +28,14 @@ function onKeyEvent(key as string, press as boolean) as boolean
     ? "TRUE[X] >>> ContentFlow::onKeyEvent(key=";key;" press=";press.ToStr();")"
     if press and key = "back" and m.adRenderer = invalid then
         ? "TRUE[X] >>> ContentFlow::onKeyEvent() - back pressed while content is playing, requesting stream cancel..."
-
-        if m.videoPlayer <> invalid then m.videoPlayer.control = "stop"
         m.rafTask.exitPlayback = true
     end if
     return press
 end function
 
 sub onPlaybackTaskEvent(event as object)
-    m.top.event = event.getData()
+    name = event.getField()
+    if name = "playerDisposed" then
+        m.top.event = { trigger: "cancelStream" }
+    end if
 end sub
