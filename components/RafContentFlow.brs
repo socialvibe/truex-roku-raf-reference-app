@@ -26,7 +26,7 @@ end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
     ? "TRUE[X] >>> ContentFlow::onKeyEvent(key=";key;" press=";press.ToStr();")"
-    if press and key = "back" and m.adRenderer = invalid then
+    if press and key = "back" then
         ? "TRUE[X] >>> ContentFlow::onKeyEvent() - back pressed while content is playing, requesting stream cancel..."
         m.rafTask.exitPlayback = true
     end if

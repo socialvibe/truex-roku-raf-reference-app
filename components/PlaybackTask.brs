@@ -61,7 +61,7 @@ sub setupRaf()
   adUrl = m.top.adUrl
   if adUrl = invalid OR adUrl = ""
     ' adUrl = "pkg:/res/vast.xml"  ' Regular Ads
-    adUrl = "pkg:/res/vast-truex.xml"  ' TrueX preroll + Ads
+    adUrl = "pkg:/res/vast-truex.xml"  ' TrueX preroll + Ads.  Forced Midroll Skip Card.
     ' adUrl = "http://stash.truex.com.s3.amazonaws.com/sample-tags/dfp-dai/roku-vmap/ss_sab-adpod-vast-funimation-preroll.xml"
   end if 
   raf.setAdUrl(adUrl)
