@@ -6,15 +6,22 @@ sub init()
 end sub
 
 sub setup() 
-  m.port = createObject("roMessagePort")
-  m.adFacade = m.top.adFacade
-  m.skipAds = false
-  m.isInTruexAd = false
-
+  setupScopedVariables()
   setupVideo()
   setupRaf()
   setupEvents()
-  startPlayback()
+  initPlayback()
+end sub
+
+sub setupScopedVariables()
+  m.port = createObject("roMessagePort")
+  m.adFacade = m.top.adFacade
+  m.skipAds = false
+  m.lastPosition = 0
+  m.videoPlayer = invalid
+  m.raf = invalid
+  m.truexAd = invalid
+  m.currentAdPod = invalid
 end sub
 
 sub setupVideo()
@@ -66,13 +73,12 @@ sub setupEvents()
   m.top.observeField("exitPlayback", m.port)
 end sub
 
-sub startPlayback()
-  ? "TRUE[X] >>> startPlayback()"
+sub initPlayback()
+  ? "TRUE[X] >>> initPlayback()"
 
-  if playPreroll() ' Currently doesn't handle secondary ad flows (eg. skip choice card).  Requires letting playback to handle
-    ' Let preroll handle resuming playback
-  else
-    m.videoPlayer.control = "play" 'TODO: Should this go in the flow?
+  startPlayback = playPreroll()
+  if startPlayback
+    startPlayback()
   end if
 
   while(true)
@@ -95,21 +101,8 @@ sub startPlayback()
   end while
 end sub
 
-function playPreroll() as Boolean
-  ads = m.raf.getAds()
-  if ads = invalid then return false
-
-  for each adPod in ads
-    if adPod.rendersequence = "preroll"
-      return handleAds(adPod)
-    end if
-  end for
-
-  return false
-end function
-
 sub onPositionChanged(event)
-  position = event.getData()
+  m.lastPosition = event.getData()
 
   ads = m.raf.getAds(event)
   handleAds(ads)
@@ -135,35 +128,46 @@ sub onTruexEvent(event)
     "SKIPCARDSHOWN": "skipCardShown"
   }
 
-  restorePlaybackEvents = [types.ADCOMPLETED, types.NOADSAVAILABLE, types.ADERROR]
+  startPlaybackEvents = [types.ADCOMPLETED, types.NOADSAVAILABLE, types.ADERROR]
 
   if eventType = types.ADFREEPOD
     m.skipAds = true
-  else if arrayUtils_includes(restorePlaybackEvents, eventType)
-    restorePlayback()
+  else if arrayUtils_includes(startPlaybackEvents, eventType)
+    startPlayback()
   else if eventType = types.USERCANCELSTREAM
     exitPlayback()
   end if
 end sub
 
+function playPreroll() as Boolean
+  resumePlayback = true
+  ads = m.raf.getAds()
+  if ads = invalid then return resumePlayback
+
+  for each adPod in ads
+    if adPod.rendersequence = "preroll"
+      resumePlayback = handleAds(adPod)
+    end if
+  end for
+
+  return resumePlayback
+end function
+
 function handleAds(ads) as Boolean
+  resumePlayback = true
+
   if ads <> invalid AND ads.ads.count() > 0
     m.currentAdPod = ads
     firstAd = ads.ads[0] 'Assume truex can only be first ad
-
-    if m.skipAds then
-      ads.viewed = true ' Updates ad pod so RAF will ignore it
-      return false
-    end if
 
     if firstAd.adParameters <> invalid
       m.truexAd = firstAd
       m.truexAd.adParameters = parseJSON(m.truexAd.adParameters)
       m.truexAd.renderSequence = ads.renderSequence
-      ads.ads.delete(0) ' Removes it from future ad handling for raf
+      ads.ads.delete(0) ' Removes it from certain use cases due to raf
 
       playTrueXAd()
-      return true
+      resumePlayback = false
     else if firstAd.streams <> invalid AND firstAd.creativeid = "truex-test-id"
       ' Hacky conditional above for now.  Probably DELETE this block after
       ' TODO:  Convert this sample into a local AdParameters case to use the above block instead
@@ -176,27 +180,28 @@ function handleAds(ads) as Boolean
         placement_hash: "74fca63c733f098340b0a70489035d683024440d" 'Placeholder
       }
 
-      ads.ads.delete(0) ' Removes it from future ad handling for raf
+      ads.ads.delete(0) ' Removes it from certain use cases due to raf
 
       playTrueXAd()
-      return true
+      resumePlayback = false
     else ' Non-TrueX ads
       hidePlayback()
       watchedAd = m.raf.showAds(ads, invalid, m.adFacade) 'Takes thread ownership until complete or exit
 
-      if NOT watchedAd
-        exitPlayback()
+      if watchedAd
+        resumePlayback = true 
       else
-        restorePlayback()
+        resumePlayback = false
+        exitPlayback() 
       end if
-
-      return true
     end if
   end if
+
+  return resumePlayback
 end function
 
 sub playTrueXAd()
-    ? "TRUE[X] >>> ContentFlow::launchTruexAd() - instantiating TruexAdRenderer ComponentLibrary..."
+    ? "TRUE[X] >>> PlaybackTask::playTrueXAd() - instantiating TruexAdRenderer ComponentLibrary..."
 
     ' instantiate TruexAdRenderer and register for event updates
     m.adRenderer = m.top.adFacade.createChild("TruexLibrary:TruexAdRenderer")
@@ -212,30 +217,39 @@ sub playTrueXAd()
       channelWidth: 1920, ' Optional parameter, set the width in pixels of the channel's interface, defaults to 1920
       channelHeight: 1080 ' Optional parameter, set the height in pixels of the channel's interface, defaults to 1080
     }
-    ? "TRUE[X] >>> ContentFlow::launchTruexAd() - initializing TruexAdRenderer with action=";tarInitAction
+    ? "TRUE[X] >>> PlaybackTask::playTrueXAd() - initializing TruexAdRenderer with action=";tarInitAction
     m.adRenderer.action = tarInitAction
 
     hidePlayback()
 
-    ? "TRUE[X] >>> ContentFlow::launchTruexAd() - starting TruexAdRenderer..."
+    ? "TRUE[X] >>> PlaybackTask::playTrueXAd() - starting TruexAdRenderer..."
     m.adRenderer.action = { type: "start" }
     m.adRenderer.focusable = true
     m.adRenderer.SetFocus(true)
+end sub
 
-    m.isInTruexAd = true
+sub startPlayback()
+    cleanUpAdRenderer()
+
+    if m.skipAds AND m.currentAdPod <> invalid then
+      m.currentAdPod.viewed = true
+      m.currentAdPod = invalid
+    end if
+
+    ' Check if we need to play other (non-truex) ads
+    play = handleAds(m.currentAdPod)
+
+    if play
+      m.videoPlayer.visible = true
+      if (m.lastPosition > 0) m.videoPlayer.seek = m.lastPosition
+      m.videoPlayer.control = "play"
+      m.videoPlayer.setFocus(true)
+    end if
 end sub
 
 sub hidePlayback()
     m.videoPlayer.control = "stop"
     m.videoPlayer.visible = false
-end sub
-
-sub restorePlayback()
-    cleanUpAdRenderer()
-
-    m.videoPlayer.visible = true
-    m.videoPlayer.control = "play"
-    m.videoPlayer.setFocus(true)
 end sub
 
 sub exitPlayback()  
