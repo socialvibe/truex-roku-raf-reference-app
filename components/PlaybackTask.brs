@@ -59,8 +59,9 @@ sub setupRaf()
   adUrl = m.top.adUrl
   if adUrl = invalid OR adUrl = ""
     ' adUrl = "pkg:/res/adpods/vast-regular.xml"  ' Regular Ads
-    ' adUrl = "pkg:/res/adpods/vast-truex.xml"  'TODO: Not working. TrueX preroll + Ads.  Forced Midroll Skip Card. 
-    adUrl = "pkg:/res/adpods/vmap-truex.xml"
+    adUrl = "pkg:/res/adpods/vmap-truex.xml" ' Preroll + Midroll Truex experience
+    ' adUrl = "pkg:/res/adpod/truex-pod-preroll.xml"
+    ' adUrl = "pkg:/res/adpod/truex-pod-skip.xml" ' Forced standalone skip pod.  Can be inserted in a full ad payload
   end if 
   raf.setAdUrl(adUrl)
 
@@ -74,10 +75,8 @@ end sub
 sub initPlayback()
   ? "TRUE[X] >>> initPlayback()"
 
-  startPlayback = playPreroll()
-  if startPlayback
-    startPlayback()
-  end if
+  m.currentAdPod = getPreroll()
+  startPlayback() ' Will handle playing a preroll if it exists per above
 
   while(true)
     msg = Wait(0, m.port)
@@ -137,18 +136,19 @@ sub onTruexEvent(event)
   end if
 end sub
 
-function playPreroll() as Boolean
-  resumePlayback = true
+function getPreroll() as Object
   ads = m.raf.getAds()
-  if ads = invalid then return resumePlayback
-
+  if ads = invalid then return false
+  
+  result = invalid
   for each adPod in ads
     if adPod.rendersequence = "preroll"
-      resumePlayback = handleAds(adPod)
+      result = adPod
+      exit for
     end if
   end for
 
-  return resumePlayback
+  return result
 end function
 
 function handleAds(ads) as Boolean
