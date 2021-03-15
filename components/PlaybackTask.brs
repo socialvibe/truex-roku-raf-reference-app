@@ -60,9 +60,9 @@ sub setupRaf()
 
   adUrl = m.top.adUrl
   if adUrl = invalid OR adUrl = ""
-    ' adUrl = "pkg:/res/vast.xml"  ' Regular Ads
-    adUrl = "pkg:/res/vast-truex.xml"  ' TrueX preroll + Ads.  Forced Midroll Skip Card.
-    ' adUrl = "http://stash.truex.com.s3.amazonaws.com/sample-tags/dfp-dai/roku-vmap/ss_sab-adpod-vast-funimation-preroll.xml"
+    ' adUrl = "pkg:/res/adpods/vast-regular.xml"  ' Regular Ads
+    ' adUrl = "pkg:/res/adpods/vast-truex.xml"  'TODO: Not working. TrueX preroll + Ads.  Forced Midroll Skip Card. 
+    adUrl = "pkg:/res/adpods/vmap-truex.xml"
   end if 
   raf.setAdUrl(adUrl)
 
@@ -168,22 +168,22 @@ function handleAds(ads) as Boolean
 
       playTrueXAd()
       resumePlayback = false
-    else if firstAd.streams <> invalid AND firstAd.creativeid = "truex-test-id"
-      ' Hacky conditional above for now.  Probably DELETE this block after
-      ' TODO:  Convert this sample into a local AdParameters case to use the above block instead
+    ' else if firstAd.streams <> invalid AND firstAd.creativeid = "truex-test-id"
+    '   ' Hacky conditional above for now.  Probably DELETE this block after
+    '   ' TODO:  Convert this sample into a local AdParameters case to use the above block instead
 
-      url = firstAd.streams[0].url
-      m.truexAd = firstAd
-      m.truexAd.renderSequence = ads.renderSequence
-      m.truexAd.adParameters = {
-        vast_config_url: url,
-        placement_hash: "74fca63c733f098340b0a70489035d683024440d" 'Placeholder
-      }
+    '   url = firstAd.streams[0].url
+    '   m.truexAd = firstAd
+    '   m.truexAd.renderSequence = ads.renderSequence
+    '   m.truexAd.adParameters = {
+    '     vast_config_url: url,
+    '     placement_hash: "74fca63c733f098340b0a70489035d683024440d" 'Placeholder
+    '   }
 
-      ads.ads.delete(0) ' Removes it from certain use cases due to raf
+    '   ads.ads.delete(0) ' Removes it from certain use cases due to raf
 
-      playTrueXAd()
-      resumePlayback = false
+    '   playTrueXAd()
+    '   resumePlayback = false
     else ' Non-TrueX ads
       hidePlayback()
       watchedAd = m.raf.showAds(ads, invalid, m.adFacade) 'Takes thread ownership until complete or exit
