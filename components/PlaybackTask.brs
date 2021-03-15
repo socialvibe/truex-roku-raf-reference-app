@@ -86,7 +86,7 @@ sub initPlayback()
     ' ? "event type:" msgType
     if msgType = "roSGNodeEvent"
       field = msg.getField()
-      ? "roSGNodeEvent msg.getField()" field
+      ' ? "roSGNodeEvent msg.getField()" field
       if field = "position" then 
         onPositionChanged(msg)
       else if field = "event" then
