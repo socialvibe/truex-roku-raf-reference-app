@@ -168,22 +168,6 @@ function handleAds(ads) as Boolean
 
       playTrueXAd()
       resumePlayback = false
-    ' else if firstAd.streams <> invalid AND firstAd.creativeid = "truex-test-id"
-    '   ' Hacky conditional above for now.  Probably DELETE this block after
-    '   ' TODO:  Convert this sample into a local AdParameters case to use the above block instead
-
-    '   url = firstAd.streams[0].url
-    '   m.truexAd = firstAd
-    '   m.truexAd.renderSequence = ads.renderSequence
-    '   m.truexAd.adParameters = {
-    '     vast_config_url: url,
-    '     placement_hash: "74fca63c733f098340b0a70489035d683024440d" 'Placeholder
-    '   }
-
-    '   ads.ads.delete(0) ' Removes it from certain use cases due to raf
-
-    '   playTrueXAd()
-    '   resumePlayback = false
     else ' Non-TrueX ads
       hidePlayback()
       watchedAd = m.raf.showAds(ads, invalid, m.adFacade) 'Takes thread ownership until complete or exit

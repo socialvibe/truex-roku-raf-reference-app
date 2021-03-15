@@ -28,7 +28,6 @@
           </creativeRenditions>
         </creative>
       </creatives>
-      <AdParameters id="adaptv">            <![CDATA[ debug=true&html5=true ]]></AdParameters>
     </ad>
     <ad adId="2" adUnit="4">
       <creatives>
