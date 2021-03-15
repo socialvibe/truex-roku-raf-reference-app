@@ -2,14 +2,14 @@
     <!-- Preroll -->
     <vmap:AdBreak timeOffset="start" breakType="linear" breakId="preroll">
         <vmap:AdSource id="preroll-ad-1" allowMultipleAds="false" followRedirects="true">
-            <vmap:AdTagURI templateType="vast3"><![CDATA[pkg:/res/adpod/truex-pod.xml]]></vmap:AdTagURI>
+            <vmap:AdTagURI templateType="vast3"><![CDATA[pkg:/res/adpod/truex-pod-preroll.xml]]></vmap:AdTagURI>
         </vmap:AdSource>
     </vmap:AdBreak>
 
     <!-- Midroll 1 -->
     <vmap:AdBreak timeOffset="00:00:30.000" breakType="linear" breakId="midroll-1">
         <vmap:AdSource id="midroll-1-ad-1" allowMultipleAds="false" followRedirects="true">
-            <vmap:AdTagURI templateType="vast3"><![CDATA[pkg:/res/adpod/truex-pod.xml]]></vmap:AdTagURI>
+            <vmap:AdTagURI templateType="vast3"><![CDATA[pkg:/res/adpod/truex-pod-midroll.xml]]></vmap:AdTagURI>
         </vmap:AdSource>
     </vmap:AdBreak>
 </vmap:VMAP>

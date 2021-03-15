@@ -30,8 +30,6 @@ sub setupVideo()
   videoPlayer = m.top.video
   videoContent = createObject("roSGNode", "ContentNode")
 
-  ' videoContent.url = "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4"
-  ' videoContent.length = 60
   videoContent.url = "http://ctv.truex.com.s3.amazonaws.com/assets/reference-app-stream-no-ads-720p.mp4"
   videoContent.length = 22 * 60
 
