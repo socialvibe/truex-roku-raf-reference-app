@@ -1,16 +1,14 @@
 ' Copyright (c) 2019 true[X], Inc. All rights reserved.
 '-----------------------------------------------------------------------------------------------------------
-' ContentFlow
+' PlaybackTask
 '-----------------------------------------------------------------------------------------------------------
-' Uses the IMA SDK to initialize and play a video stream with dynamic ad insertion (DAI).
-'
-' NOTE: Expects m.global.streamInfo to exist with the necessary video stream information.
+' Task responsible for handling all responsibilities surrounding RAF, RAF ad integration, TrueX Ad rendering,
+' and simple playback behaviours
 '
 ' Member Variables:
 ' See setupScopedVariables
 '-----------------------------------------------------------------------------------------------------------
-
-Library "Roku_Ads.brs" ' Must be initialized in the task (or main) thread
+Library "Roku_Ads.brs" ' Must be managed in a task or render due to a Roku/RAF implementation requirement
 
 sub init()
     ? "TRUE[X] >>> PlaybackTask::init()"
@@ -25,17 +23,24 @@ sub setup()
     initPlayback()
 end sub
 
+'-------------------------------------------
+' Initialize and setup all member variables for easy reference
+'-------------------------------------------
 sub setupScopedVariables()
+    ? "TRUE[X] >>> setupScopedVariables()"
+
     m.port = createObject("roMessagePort")  ' Event port.  Must be used for events due to render/task thread scoping
     m.adFacade = m.top.adFacade  ' Hold reference to the component to put the adRenderer onto
     m.skipAds = false   ' Flag to skip non-truex ads
     m.lastPosition = 0  ' Tracks last position, primarily for seeking purposes
-    m.videoPlayer = invalid
+    m.videoPlayer = invalid ' Hold reference to player component from render thread
     m.raf = invalid
-    m.truexAd = invalid ' TODO: See if this can be removed
     m.currentAdPod = invalid ' Current ad pod in use or processing
 end sub
 
+'-------------------------------------------
+' Initialize video player
+'-----------------------------------------
 sub setupVideo()
     ? "TRUE[X] >>> setupVideo()"
 
@@ -58,6 +63,10 @@ sub setupVideo()
     m.videoPlayer = videoPlayer
 end sub
 
+'-------------------------------------------
+' Initialize Roku Ads Framework (RAF)
+' Also setup ads via RAF if known ahead of time
+'-----------------------------------------
 sub setupRaf()
     ? "TRUE[X] >>> setupRaf()"
     raf = Roku_Ads()
@@ -78,35 +87,47 @@ sub setupRaf()
     m.raf = raf
 end sub
 
+'-------------------------------------------
+' Setup any task based event listening
+'-----------------------------------------
 sub setupEvents()
     m.top.observeField("exitPlayback", m.port)
 end sub
 
+'-------------------------------------------
+' Begins the playback experience and starts the event listener loop
+' Will be responsible for checking if there is a preroll and to play it before starting playback
+'-----------------------------------------
 sub initPlayback()
     ? "TRUE[X] >>> initPlayback()"
 
     m.currentAdPod = getPreroll()
     playContentStream() ' Will handle playing a preroll if it exists per above
 
-    while(true)
+    while (true)
         msg = Wait(0, m.port)
         msgType = type(msg)
 
-        ' ? "event type:" msgType
         if msgType = "roSGNodeEvent"
             field = msg.getField()
-            ' ? "roSGNodeEvent msg.getField()" field
             if field = "position" then 
-            onPositionChanged(msg)
+                onPositionChanged(msg)
             else if field = "event" then
-            onTrueXEvent(msg)
-            else if field = "exitPlayback"
-            exitContentStream()
+                onTrueXEvent(msg)
+            else if field = "exitPlayback" then
+                exitContentStream()
             end if
         end if
     end while
 end sub
 
+'-------------------------------------------
+' Stores the last position for player seeking purposes
+' Gets ads to process
+'
+' Params:
+'   * event as roAssociativeArray - contains the event data from the port
+'-----------------------------------------
 sub onPositionChanged(event)
   m.lastPosition = event.getData()
 
@@ -114,6 +135,13 @@ sub onPositionChanged(event)
   handleAds(ads)
 end sub
 
+'-------------------------------------------
+' Handles all TrueX Library events
+' See "types" for the different event types supported and explanations for non obvious cases
+'
+' Params:
+'   * event as roAssociativeArray - contains the TrueX Ad Renderer event data from the port
+'-----------------------------------------
 sub onTruexEvent(event)
     data = event.getData()
     eventType = data.type
@@ -125,12 +153,11 @@ sub onTruexEvent(event)
         "ADCOMPLETED": "adCompleted"
         "ADPOSITION": "adPosition",
         "ADERROR": "adError",
-        "ADFREEPOD": "adFreePod"
+        "ADFREEPOD": "adFreePod", ' User has earned credit for the engagement.  Can skip past other ads in pod
         "NOADSAVAILABLE": "noAdsAvailable",
-        "OPTIN": "optIn",
-        "OPTOUT": "optOut",
-        "USERCANCEL": "userCancel",
-        "USERCANCELSTREAM": "userCancelStream",
+        "OPTIN": "optIn",   ' User opts in to choice card
+        "OPTOUT": "optOut", ' User opts out of choice card
+        "USERCANCELSTREAM": "userCancelStream", ' User exits playback. EG. Typically "back" on choice card
         "SKIPCARDSHOWN": "skipCardShown"
     }
 
@@ -143,21 +170,37 @@ sub onTruexEvent(event)
     end if
 end sub
 
+'-------------------------------------------
+' Special ad case where we see if there is a preroll ad to process before starting playback
+'
+' Return:
+'   Preroll AdPod if it exists
+'-----------------------------------------
 function getPreroll() as Object
+    ? "TRUE[X] >>> PlaybackTask::getPreroll(): " 
+
     ads = m.raf.getAds()
-    if ads = invalid then return false
+    if ads = invalid then return invalid
     
     result = invalid
     for each adPod in ads
         if adPod.rendersequence = "preroll"
-        result = adPod
-        exit for
+            result = adPod
+            exit for
         end if
     end for
 
     return result
 end function
 
+'-------------------------------------------
+' General ad handler.  Takes care of seeing for a given pod, to play a truex ad
+' or play regular ads
+'
+' Return:
+'   false if playback should not be resumed yet (truex case mainly)
+'   true if playback should be resumed (non-ad or certain raf cases)
+'-----------------------------------------
 function handleAds(ads) as Boolean
     resumePlayback = true
 
@@ -166,17 +209,18 @@ function handleAds(ads) as Boolean
         firstAd = ads.ads[0] 'Assume truex can only be first ad in a pod
 
         if isTruexAd(firstAd)
-            m.truexAd = firstAd
-            m.truexAd.adParameters = parseJSON(m.truexAd.adParameters)
-            m.truexAd.renderSequence = ads.renderSequence
-            
+            data = {
+                adParameters: parseJSON(firstAd.adParameters),
+                renderSequence: ads.renderSequence
+            }            
+
             ' Need to delete the ad from the pod which is referenced by raf so it plays
             ' ads from the correct index when resulting in non-truex flows (eg. opt out)
             ' If it is not deleted, this pod will attempt to play the truex ad placeholder
             ' when it is passed into raf.showAds()
             ads.ads.delete(0)
 
-            playTrueXAd()
+            playTrueXAd(data)
             resumePlayback = false
         else ' Non-TrueX ads
             hideContentStream()
@@ -194,13 +238,26 @@ function handleAds(ads) as Boolean
     return resumePlayback
 end function
 
+'-------------------------------------------
+' Helper to see if an ad is TrueX
+'
+' Return:
+'   true if TrueX, false if other
+'-----------------------------------------
 function isTruexAd(ad) as Boolean
     if ad.adParameters <> invalid AND ad.adserver <> invalid AND ad.adserver.instr(0, "get.truex.com/") > 0 then return true
 
     return false
 end function
 
-sub playTrueXAd()
+'-------------------------------------------
+' Handles responsibility of initializing the TrueX Ad Renderer (TAR) and starting the 
+' interactive ad experience.  Stops and hides the content video player
+' 
+' Params:
+'   * data as associative array - contains adParameters and renderSequence for TAR
+'-----------------------------------------
+sub playTrueXAd(data)
     ? "TRUE[X] >>> PlaybackTask::playTrueXAd() - instantiating TruexAdRenderer ComponentLibrary..."
 
     ' instantiate TruexAdRenderer and register for event updates
@@ -209,9 +266,9 @@ sub playTrueXAd()
 
     tarInitAction = {
         type: "init",
-        adParameters: m.truexAd.adParameters,
+        adParameters: data.adParameters,
         supportsUserCancelStream: true, ' enables cancelStream event types, disable if Channel does not support
-        slotType: ucase(m.truexAd.rendersequence),
+        slotType: ucase(data.rendersequence),
         logLevel: 1, ' Optional parameter, set the verbosity of true[X] logging, from 0 (mute) to 5 (verbose), defaults to 5
         channelWidth: 1920, ' Optional parameter, set the width in pixels of the channel's interface, defaults to 1920
         channelHeight: 1080 ' Optional parameter, set the height in pixels of the channel's interface, defaults to 1080
@@ -227,7 +284,13 @@ sub playTrueXAd()
     m.adRenderer.SetFocus(true)
 end sub
 
+'-------------------------------------------
+' Handles checking if there are ads to play before starting/resuming playback
+' Also always cleans up TAR if able
+'-----------------------------------------
 sub playContentStream()
+    ? "TRUE[X] >>> PlaybackTask::playContentStream(): "
+
     cleanUpAdRenderer()
 
     if m.skipAds AND m.currentAdPod <> invalid then
@@ -247,18 +310,32 @@ sub playContentStream()
     end if
 end sub
 
+'-------------------------------------------
+' Hides and stops stream
+'-----------------------------------------
 sub hideContentStream()
+    ? "TRUE[X] >>> PlaybackTask::hideContentStream(): "
+
     m.videoPlayer.control = "stop"
     m.videoPlayer.visible = false
 end sub
 
+'-------------------------------------------
+' Cleans up the player to get ready to exit playback
+' Bubbles up a message playerDisposed property so invoker knows it is finished cleaning up
+'-----------------------------------------
 sub exitContentStream()  
+    ? "TRUE[X] >>> PlaybackTask::exitContentStream(): "
+
     cleanUpAdRenderer()
     if m.videoPlayer <> invalid then m.videoPlayer.control = "stop"
 
     m.top.playerDisposed = true
 end sub
 
+'-------------------------------------------
+' Cleans up TAR
+'-----------------------------------------
 sub cleanUpAdRenderer()
     ? "TRUE[X] >>> PlaybackTask::cleanUpAdRenderer(): "
     if m.adRenderer <> invalid then
