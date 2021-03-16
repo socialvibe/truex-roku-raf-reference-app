@@ -153,7 +153,7 @@ function handleAds(ads) as Boolean
     m.currentAdPod = ads
     firstAd = ads.ads[0] 'Assume truex can only be first ad in a pod
 
-    if firstAd.adParameters <> invalid
+    if isTruexAd(firstAd)
       m.truexAd = firstAd
       m.truexAd.adParameters = parseJSON(m.truexAd.adParameters)
       m.truexAd.renderSequence = ads.renderSequence
@@ -180,6 +180,12 @@ function handleAds(ads) as Boolean
   end if
 
   return resumePlayback
+end function
+
+function isTruexAd(ad) as Boolean
+  if ad.adParameters <> invalid AND ad.adserver <> invalid AND ad.adserver.instr(0, "get.truex.com/") > 0 then return true
+
+  return false
 end function
 
 sub playTrueXAd()
