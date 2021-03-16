@@ -1,8 +1,8 @@
 # Overview
 
-This project contains sample source code that demonstrates how to integrate true[X]'s Roku
-ad renderer in combination with RAF for client side ads. RAF's responsibilities here are to parse an ad response,
-detect if there are any ads to play, and to play any non-truex ads
+This project contains sample source code that demonstrates how to integrate true[X]'s Roku ad renderer in
+combination with RAF for client side ads. RAF's responsibilities here are to parse an ad response, detect
+if there are any ads to play, and to play any non-truex ads
 
 For a more detailed integration guide, please refer to: https://github.com/socialvibe/truex-roku-integrations.
 
