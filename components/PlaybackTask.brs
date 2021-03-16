@@ -74,7 +74,7 @@ sub initPlayback()
   ? "TRUE[X] >>> initPlayback()"
 
   m.currentAdPod = getPreroll()
-  startContentStream() ' Will handle playing a preroll if it exists per above
+  playContentStream() ' Will handle playing a preroll if it exists per above
 
   while(true)
     msg = Wait(0, m.port)
@@ -125,7 +125,7 @@ sub onTruexEvent(event)
   if eventType = types.ADFREEPOD
     m.skipAds = true
   else if eventType = types.ADCOMPLETED OR eventType = types.NOADSAVAILABLE OR eventType = types.ADERROR
-    startContentStream()
+    playContentStream()
   else if eventType = types.USERCANCELSTREAM
     exitContentStream()
   end if
@@ -209,7 +209,7 @@ sub playTrueXAd()
     m.adRenderer.SetFocus(true)
 end sub
 
-sub startContentStream()
+sub playContentStream()
     cleanUpAdRenderer()
 
     if m.skipAds AND m.currentAdPod <> invalid then
