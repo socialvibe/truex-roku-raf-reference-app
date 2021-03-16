@@ -129,10 +129,10 @@ end sub
 '   * event as roAssociativeArray - contains the event data from the port
 '-----------------------------------------
 sub onPositionChanged(event)
-  m.lastPosition = event.getData()
+    m.lastPosition = event.getData()
 
-  ads = m.raf.getAds(event)
-  handleAds(ads)
+    ads = m.raf.getAds(event)
+    handleAds(ads)
 end sub
 
 '-------------------------------------------

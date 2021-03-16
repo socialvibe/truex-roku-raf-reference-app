@@ -24,7 +24,7 @@
                         <Duration>00:00:30</Duration>
                         <MediaFiles>
                             <MediaFile id="coffee-video-ad" delivery="progressive" width="3840" height="2160" type="video/mp4" bitrate="48610" scalable="true" maintainAspectRatio="true">
-                                <![CDATA[http://ctv.truex.com.s3.amazonaws.com/assets/coffee-720p.mp4]]>
+                                <![CDATA[http://ctv.truex.com/assets/coffee-720p.mp4]]>
                             </MediaFile>
                         </MediaFiles>
                     </Linear>
@@ -46,7 +46,7 @@
                         <Duration>00:00:30</Duration>
                         <MediaFiles>
                             <MediaFile id="airline-video-ad" delivery="progressive" width="3840" height="2160" type="video/mp4" bitrate="79550" scalable="true" maintainAspectRatio="true">
-                                <![CDATA[http://ctv.truex.com.s3.amazonaws.com/assets/airline-720p.mp4]]>
+                                <![CDATA[http://ctv.truex.com/assets/airline-720p.mp4]]>
                             </MediaFile>
                         </MediaFiles>
                     </Linear>
