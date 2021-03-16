@@ -21,7 +21,7 @@
 
             <Video
               id="videoPlayer"
-              notificationInterval="0.1"/>
+              notificationInterval="0.5"/>
 
         </Group>
     </children>

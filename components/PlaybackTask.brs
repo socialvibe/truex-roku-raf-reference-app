@@ -74,7 +74,7 @@ sub initPlayback()
   ? "TRUE[X] >>> initPlayback()"
 
   m.currentAdPod = getPreroll()
-  startPlayback() ' Will handle playing a preroll if it exists per above
+  startContentStream() ' Will handle playing a preroll if it exists per above
 
   while(true)
     msg = Wait(0, m.port)
@@ -89,9 +89,8 @@ sub initPlayback()
       else if field = "event" then
         onTrueXEvent(msg)
       else if field = "exitPlayback"
-        exitPlayback()
+        exitContentStream()
       end if
-      ' TODO: Video complete event
     end if
   end while
 end sub
@@ -126,9 +125,9 @@ sub onTruexEvent(event)
   if eventType = types.ADFREEPOD
     m.skipAds = true
   else if eventType = types.ADCOMPLETED OR eventType = types.NOADSAVAILABLE OR eventType = types.ADERROR
-    startPlayback()
+    startContentStream()
   else if eventType = types.USERCANCELSTREAM
-    exitPlayback()
+    exitContentStream()
   end if
 end sub
 
@@ -152,29 +151,30 @@ function handleAds(ads) as Boolean
 
   if ads <> invalid AND ads.ads.count() > 0
     m.currentAdPod = ads
-    firstAd = ads.ads[0] 'Assume truex can only be first ad
+    firstAd = ads.ads[0] 'Assume truex can only be first ad in a pod
 
     if firstAd.adParameters <> invalid
       m.truexAd = firstAd
       m.truexAd.adParameters = parseJSON(m.truexAd.adParameters)
       m.truexAd.renderSequence = ads.renderSequence
-      ads.ads.delete(0) ' Removes it from certain use cases due to raf
+      
+      ' Need to delete the ad from the pod which is referenced by raf so it plays
+      ' ads from the correct index when resulting in non-truex flows (eg. opt out)
+      ' If it is not deleted, this pod will attempt to play the truex ad placeholder
+      ' when it is passed into raf.showAds()
+      ads.ads.delete(0)
 
       playTrueXAd()
       resumePlayback = false
-    ' else if firstAd.companionAds <> invalid
-      ' m.truexAd.adParameters = ' TODO: CompanionAd Tag handling.  Parse to valid TAR format
-      ' m.truexAd.renderSequence = ads.renderSequence
-      ' ads.ads.delete(0)
     else ' Non-TrueX ads
-      hidePlayback()
-      watchedAd = m.raf.showAds(ads, invalid, m.adFacade) 'Takes thread ownership until complete or exit
+      hideContentStream()
+      watchedAd = m.raf.showAds(ads, invalid, m.adFacade) ' Takes thread ownership until complete or exit
 
       if watchedAd
         resumePlayback = true 
       else
         resumePlayback = false
-        exitPlayback() 
+        exitContentStream() 
       end if
     end if
   end if
@@ -201,7 +201,7 @@ sub playTrueXAd()
     ? "TRUE[X] >>> PlaybackTask::playTrueXAd() - initializing TruexAdRenderer with action=";tarInitAction
     m.adRenderer.action = tarInitAction
 
-    hidePlayback()
+    hideContentStream()
 
     ? "TRUE[X] >>> PlaybackTask::playTrueXAd() - starting TruexAdRenderer..."
     m.adRenderer.action = { type: "start" }
@@ -209,7 +209,7 @@ sub playTrueXAd()
     m.adRenderer.SetFocus(true)
 end sub
 
-sub startPlayback()
+sub startContentStream()
     cleanUpAdRenderer()
 
     if m.skipAds AND m.currentAdPod <> invalid then
@@ -228,12 +228,12 @@ sub startPlayback()
     end if
 end sub
 
-sub hidePlayback()
+sub hideContentStream()
     m.videoPlayer.control = "stop"
     m.videoPlayer.visible = false
 end sub
 
-sub exitPlayback()  
+sub exitContentStream()  
   cleanUpAdRenderer()
   if m.videoPlayer <> invalid then m.videoPlayer.control = "stop"
 

@@ -12,6 +12,6 @@
         <field id="exitPlayback" type="boolean" alwaysNotify="true"/>
 
         <!-- Write -->
-        <field id="playerDisposed" type="bool" />  <!-- Events to bubble up to scene -->
+        <field id="playerDisposed" type="bool" />  <!-- Event to bubble up to scene -->
     </interface>
 </component>
