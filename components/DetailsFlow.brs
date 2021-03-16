@@ -34,14 +34,18 @@ sub init()
 
     if m.numImagesLoading = 0 then m.top.visible = true
 
-    streamInfo = parseJson(ReadAsciiFile("pkg:/res/reference-app-streams.json"))[0]
+    streamInfo = {
+        "title": "The true[X] Employee Experience",
+        "description": "Our mission is to provide the best advertising experience for consumers, the best monetization for premium publishers, and the best return for brand advertisers. Learn about our team and employee experience.",
+        "cover": "https://stash.truex.com/reference-apps/scratch/truex_cover_placeholder_spaceneedle.png"
+    }
+
     streamTitle = streamInfo.title
     if streamTitle <> invalid then m.top.FindNode("detailsFlowTitle").text = streamTitle
     streamDesc = streamInfo.description
     if streamDesc <> invalid then m.top.FindNode("detailsFlowDescription").text = streamDesc
     streamCover = streamInfo.cover
     if streamCover <> invalid then m.top.FindNode("episode1").uri = streamCover
-
     if m.numImagesLoading <= 0 then m.rootLayout.visible = true
 end sub
 
