@@ -15,7 +15,7 @@
         uri="pkg:/components/RafContentFlow.brs"/>
 
     <children>
-        <Rectangle id="adFacade" />
+        <Group id="adFacade" />
         <Group
             id="contentFlowLayout">
 
