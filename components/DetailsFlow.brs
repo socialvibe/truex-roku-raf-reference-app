@@ -34,14 +34,14 @@ sub init()
 
     if m.numImagesLoading = 0 then m.top.visible = true
 
-    if m.global.streamInfo = invalid then return
-    streamInfo = ParseJson(m.global.streamInfo)[0]
+    streamInfo = parseJson(ReadAsciiFile("pkg:/res/reference-app-streams.json"))[0]
     streamTitle = streamInfo.title
     if streamTitle <> invalid then m.top.FindNode("detailsFlowTitle").text = streamTitle
     streamDesc = streamInfo.description
     if streamDesc <> invalid then m.top.FindNode("detailsFlowDescription").text = streamDesc
     streamCover = streamInfo.cover
     if streamCover <> invalid then m.top.FindNode("episode1").uri = streamCover
+
     if m.numImagesLoading <= 0 then m.rootLayout.visible = true
 end sub
 
