@@ -33,7 +33,7 @@ sub setupVideo()
   videoContent.url = "http://ctv.truex.com.s3.amazonaws.com/assets/reference-app-stream-no-ads-720p.mp4"
   videoContent.length = 22 * 60
 
-  videoContent.title = "video title"
+  videoContent.title = "The true[X] Employee Experience"
   videoContent.streamFormat = "mp4"
   videoContent.playStart = 0
 
@@ -58,10 +58,8 @@ sub setupRaf()
 
   adUrl = m.top.adUrl
   if adUrl = invalid OR adUrl = ""
-    ' adUrl = "pkg:/res/adpods/vast-regular.xml"  ' Regular Ads
     adUrl = "pkg:/res/adpods/vmap-truex.xml" ' Preroll + Midroll Truex experience
-    ' adUrl = "pkg:/res/adpod/truex-pod-preroll.xml"
-    ' adUrl = "pkg:/res/adpod/truex-pod-skip.xml" ' Forced standalone skip pod.  Can be inserted in a full ad payload
+    ' adUrl = "pkg:/res/adpod/truex-pod-preroll.xml"  ' Can check individual vast pods
   end if 
   raf.setAdUrl(adUrl)
 
@@ -166,6 +164,10 @@ function handleAds(ads) as Boolean
 
       playTrueXAd()
       resumePlayback = false
+    ' else if firstAd.companionAds <> invalid
+      ' m.truexAd.adParameters = ' TODO: CompanionAd Tag handling.  Parse to valid TAR format
+      ' m.truexAd.renderSequence = ads.renderSequence
+      ' ads.ads.delete(0)
     else ' Non-TrueX ads
       hidePlayback()
       watchedAd = m.raf.showAds(ads, invalid, m.adFacade) 'Takes thread ownership until complete or exit
@@ -189,7 +191,6 @@ sub playTrueXAd()
     m.adRenderer = m.top.adFacade.createChild("TruexLibrary:TruexAdRenderer")
     m.adRenderer.observeFieldScoped("event", m.port)
 
-    ' use the companion ad data to initialize the true[X] renderer
     tarInitAction = {
       type: "init",
       adParameters: m.truexAd.adParameters,
