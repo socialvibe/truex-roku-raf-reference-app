@@ -215,6 +215,7 @@ sub startContentStream()
     if m.skipAds AND m.currentAdPod <> invalid then
       m.currentAdPod.viewed = true
       m.currentAdPod = invalid
+      m.skipAds = false
     end if
 
     ' Check if we need to play other (non-truex) ads
