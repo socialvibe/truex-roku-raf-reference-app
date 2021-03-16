@@ -30,7 +30,7 @@ sub setupVideo()
   videoPlayer = m.top.video
   videoContent = createObject("roSGNode", "ContentNode")
 
-  videoContent.url = "http://ctv.truex.com.s3.amazonaws.com/assets/reference-app-stream-no-ads-720p.mp4"
+  videoContent.url = "http://ctv.truex.com/assets/reference-app-stream-no-ads-720p.mp4"
   videoContent.length = 22 * 60
 
   videoContent.title = "The true[X] Employee Experience"
@@ -123,11 +123,9 @@ sub onTruexEvent(event)
     "SKIPCARDSHOWN": "skipCardShown"
   }
 
-  startPlaybackEvents = [types.ADCOMPLETED, types.NOADSAVAILABLE, types.ADERROR]
-
   if eventType = types.ADFREEPOD
     m.skipAds = true
-  else if arrayUtils_includes(startPlaybackEvents, eventType)
+  else if eventType = types.ADCOMPLETED OR eventType = types.NOADSAVAILABLE OR eventType = types.ADERROR
     startPlayback()
   else if eventType = types.USERCANCELSTREAM
     exitPlayback()
