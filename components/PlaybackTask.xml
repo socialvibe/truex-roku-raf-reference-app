@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) 2019 true[X], Inc. All rights reserved. -->
+
+<component name="PlaybackTask" extends="Task">
+    <script type="text/brightscript" uri="pkg:/components/PlaybackTask.brs"/>
+
+    <interface>
+        <!-- Read -->
+        <field id="video" type="node" />
+        <field id="adUrl" type="string" />
+        <field id="adFacade" type="node" />
+        <field id="exitPlayback" type="boolean" alwaysNotify="true"/>
+
+        <!-- Write -->
+        <field id="playerDisposed" type="bool" />  <!-- Event to bubble up to scene -->
+    </interface>
+</component>

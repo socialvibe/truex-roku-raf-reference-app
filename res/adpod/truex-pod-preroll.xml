@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VAST xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vast.xsd" version="3.0">
+    <Ad id="super_tag" sequence="1">
+        <Wrapper>
+            <AdSystem>trueX</AdSystem>
+            <AdTitle>true[X] Interactive Ad</AdTitle>
+            <Description>Interactive ad from true[X]</Description>
+            <VASTAdTagURI><![CDATA[http://get.truex.com/f10e25d796a25c294dc308f2b5f916cdd3d670e9/vast?dimension_2=0&dimension_5=evergreen&stream_position=preroll&network_user_id=ROKU_ADS_TRACKING_ID]]></VASTAdTagURI>
+            <Impression></Impression>
+            <Creatives></Creatives>
+        </Wrapper>
+    </Ad>
+    <Ad id="1" sequence="2">
+        <InLine>
+            <AdSystem>trueX</AdSystem>
+            <AdTitle>Generic Inline Video Ad - Coffee</AdTitle>
+            <Description>
+                <![CDATA[Generic Inline Video Ad - Coffee]]>
+            </Description>
+            <Impression></Impression>
+            <Creatives>
+                <Creative id="1" sequence="1">
+                    <Linear>
+                        <Duration>00:00:30</Duration>
+                        <MediaFiles>
+                            <MediaFile id="coffee-video-ad" delivery="progressive" width="3840" height="2160" type="video/mp4" bitrate="48610" scalable="true" maintainAspectRatio="true">
+                                <![CDATA[http://ctv.truex.com/assets/coffee-720p.mp4]]>
+                            </MediaFile>
+                        </MediaFiles>
+                    </Linear>
+                </Creative>
+            </Creatives>
+        </InLine>
+    </Ad>
+    <Ad id="2" sequence="3">
+        <InLine>
+            <AdSystem>trueX</AdSystem>
+            <AdTitle>Generic Inline Video Ad - Airline</AdTitle>
+            <Description>
+                <![CDATA[Generic Inline Video Ad - Airline]]>
+            </Description>
+            <Impression></Impression>
+            <Creatives>
+                <Creative id="2" sequence="1">
+                    <Linear>
+                        <Duration>00:00:30</Duration>
+                        <MediaFiles>
+                            <MediaFile id="airline-video-ad" delivery="progressive" width="3840" height="2160" type="video/mp4" bitrate="79550" scalable="true" maintainAspectRatio="true">
+                                <![CDATA[http://ctv.truex.com/assets/airline-720p.mp4]]>
+                            </MediaFile>
+                        </MediaFiles>
+                    </Linear>
+                </Creative>
+            </Creatives>
+        </InLine>
+    </Ad>
+</VAST>

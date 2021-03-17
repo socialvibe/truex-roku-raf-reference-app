@@ -25,9 +25,6 @@ sub init()
 
     ' create/set global fields with Channel dimensions (m.global.channelWidth/channelHeight)
     setChannelWidthHeightFromRootScene()
-
-    ' initially present loading screen while Truex library is downloaded and compiled
-    showFlow("LoadingFlow")
 end sub
 
 '-------------------------------------------------------------------
@@ -46,12 +43,9 @@ sub onFlowEvent(event as object)
     ? "TRUE[X] >>> MainScene::onFlowEvent(trigger=";data.trigger;")"
 
     if data.trigger = "playButtonSelected" then
-        showFlow("ContentFlow")
+        showFlow("RafContentFlow")  ' RAF Truex Integration
     else if data.trigger = "cancelStream" then
         showFlow("DetailsFlow")
-    else if data.trigger = "streamInfoReceived" then
-        setGlobalField("streamInfo", data.streamInfo)
-        if m.tarLibrary.loadStatus = "ready" or m.tarLibrary.loadStatus = "failed" then showFlow("DetailsFlow")
     end if
 end sub
 
@@ -77,7 +71,7 @@ sub onTruexLibraryLoadStatusChanged(event as Object)
         ? "TRUE[X] >>> TruexAdRendererLib has been loaded successfully!"
 
         ' present the DetailsFlow now that the Truex library is ready
-        if m.global.streamInfo <> invalid then showFlow("DetailsFlow")
+        showFlow("DetailsFlow")
     else if m.tarLibrary.loadStatus = "failed" then
         ? "TRUE[X] >>> TruexAdRendererLib failed to load"
 
