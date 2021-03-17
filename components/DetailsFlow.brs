@@ -34,8 +34,12 @@ sub init()
 
     if m.numImagesLoading = 0 then m.top.visible = true
 
-    if m.global.streamInfo = invalid then return
-    streamInfo = ParseJson(m.global.streamInfo)[0]
+    streamInfo = {
+        "title": "The true[X] Employee Experience",
+        "description": "Our mission is to provide the best advertising experience for consumers, the best monetization for premium publishers, and the best return for brand advertisers. Learn about our team and employee experience.",
+        "cover": "https://stash.truex.com/reference-apps/scratch/truex_cover_placeholder_spaceneedle.png"
+    }
+
     streamTitle = streamInfo.title
     if streamTitle <> invalid then m.top.FindNode("detailsFlowTitle").text = streamTitle
     streamDesc = streamInfo.description

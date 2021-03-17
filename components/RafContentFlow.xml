@@ -2,25 +2,26 @@
 <!-- Copyright (c) 2019 true[X], Inc. All rights reserved. -->
 
 <!--
-    ContentFlow
+    RafContentFlow
 
     UX which contains the video player that is used to play the media stream.
 -->
 <component
-    name="ContentFlow"
+    name="RafContentFlow"
     extends="BaseFlow">
 
     <script
         type="text/brightscript"
-        uri="pkg:/components/ContentFlow.brs"/>
+        uri="pkg:/components/RafContentFlow.brs"/>
 
     <children>
+        <Group id="adFacade" />
         <Group
             id="contentFlowLayout">
 
             <Video
               id="videoPlayer"
-              notificationInterval="0.1"/>
+              notificationInterval="0.5"/>
 
         </Group>
     </children>

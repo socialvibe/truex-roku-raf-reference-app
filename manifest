@@ -24,3 +24,5 @@ splash_screen_sd=pkg:/images/splash-screen_sd.png
 
 splash_color=#181C1E
 splash_min_time=1
+
+bs_libs_required=roku_ads_lib
