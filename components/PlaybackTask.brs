@@ -30,7 +30,7 @@ sub setupScopedVariables()
     ? "TRUE[X] >>> setupScopedVariables()"
 
     m.port = createObject("roMessagePort")  ' Event port.  Must be used for events due to render/task thread scoping
-    m.adFacade = m.top.adFacade  ' Hold reference to the component to put the adRenderer onto
+    m.adFacade = m.top.adFacade  ' Hold reference to the component for RAF and Truex ad rendering
     m.skipAds = false   ' Flag to skip non-truex ads
     m.lastPosition = 0  ' Tracks last position, primarily for seeking purposes
     m.videoPlayer = invalid ' Hold reference to player component from render thread
@@ -65,7 +65,7 @@ end sub
 
 '-------------------------------------------
 ' Initialize Roku Ads Framework (RAF)
-' Also setup ads via RAF if known ahead of time
+' Also setup ads via RAF with an ad url
 '-----------------------------------------
 sub setupRaf()
     ? "TRUE[X] >>> setupRaf()"
@@ -80,7 +80,7 @@ sub setupRaf()
     adUrl = m.top.adUrl
     if adUrl = invalid OR adUrl = ""
         adUrl = "pkg:/res/adpods/vmap-truex.xml" ' Preroll + Midroll Truex experience
-        ' adUrl = "pkg:/res/adpod/truex-pod-preroll.xml"  ' Can check individual vast pods
+        ' adUrl = "pkg:/res/adpod/truex-pod-preroll.xml"  ' Can check individual vast pods. Always assumed to be a preroll pod by RAF.
     end if 
     raf.setAdUrl(adUrl)
 
@@ -240,6 +240,7 @@ end function
 
 '-------------------------------------------
 ' Helper to see if an ad is TrueX
+' Checks if there is an <AdParameter> tag, and the ad server is a qa or prod truex domain
 '
 ' Return:
 '   true if TrueX, false if other
