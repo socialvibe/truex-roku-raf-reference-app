@@ -245,7 +245,10 @@ end function
 '   true if TrueX, false if other
 '-----------------------------------------
 function isTruexAd(ad) as Boolean
-    if ad.adParameters <> invalid AND ad.adserver <> invalid AND ad.adserver.instr(0, "get.truex.com/") > 0 then return true
+    prodDomain = "get.truex.com/"
+    qaDomain = "qa-get.truex.com/"
+
+    if ad.adParameters <> invalid AND ad.adserver <> invalid AND (ad.adserver.instr(0, prodDomain) > 0 OR ad.adserver.instr(0, qaDomain)) then return true
 
     return false
 end function
