@@ -158,15 +158,35 @@ sub onTruexEvent(event)
         "OPTIN": "optIn",   ' User opts in to choice card
         "OPTOUT": "optOut", ' User opts out of choice card
         "USERCANCELSTREAM": "userCancelStream", ' User exits playback. EG. Typically "back" on choice card
-        "SKIPCARDSHOWN": "skipCardShown"
+        "SKIPCARDSHOWN": "skipCardShown",
+        "VIDEOEVENT": "videoEvent"
     }
-
+    
+    rafEvent = invalid
     if eventType = types.ADFREEPOD
         m.skipAds = true
     else if eventType = types.ADCOMPLETED OR eventType = types.NOADSAVAILABLE OR eventType = types.ADERROR
         playContentStream()
     else if eventType = types.USERCANCELSTREAM
         exitContentStream()
+    else if eventType = types.VIDEOEVENT
+        subType = data.subType
+
+        if subType = "started"
+            rafEvent = { type: "Impression" }
+        else if subType = "firstQuartile"
+            rafEvent = { type: "FirstQuartile" }
+        else if subType = "secondQuartile"
+            rafEvent = { type: "Midpoint" }
+        else if subType = "thirdQuartile"
+            rafEvent = { type: "ThirdQuartile" }
+        else if subType = "completed"
+            rafEvent = { type: "Complete" }
+        end if
+    end if
+
+    if rafEvent <> invalid
+        m.raf.fireTrackingEvents(m.currentTruexAd, rafEvent)
     end if
 end sub
 
@@ -218,6 +238,10 @@ function handleAds(ads) as Boolean
             ' ads from the correct index when resulting in non-truex flows (eg. opt out)
             ' If it is not deleted, this pod will attempt to play the truex ad placeholder
             ' when it is passed into raf.showAds()
+            m.currentTruexAd = firstAd
+            m.currentTruexAd.adPod = m.currentAdPod
+            m.currentTruexAd.position = 0
+
             ads.ads.delete(0)
 
             playTrueXAd(data)
@@ -342,6 +366,7 @@ end sub
 '-----------------------------------------
 sub cleanUpAdRenderer()
     ? "TRUE[X] >>> PlaybackTask::cleanUpAdRenderer(): "
+    m.currentTruexAd = invalid
     if m.adRenderer <> invalid then
         m.adRenderer.SetFocus(false)
         m.adRenderer.unobserveFieldScoped("event")
