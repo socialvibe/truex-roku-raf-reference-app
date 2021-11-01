@@ -10,11 +10,11 @@
                 <Creative id="1" sequence="1">
                     <Linear>
                         <TrackingEvents>
-                            <Tracking event="start"><![CDATA[http://dummyurl.com?network_user_id_macros_test=ROKU_ADS_TRACKING_ID]]></Tracking>
-                            <Tracking event="firstQuartile"><![CDATA[http://dummyurl.com?network_user_id_macros_test=ROKU_ADS_TRACKING_ID]]></Tracking>
-                            <Tracking event="midpoint"><![CDATA[http://dummyurl.com?network_user_macros_id_test=ROKU_ADS_TRACKING_ID]]></Tracking>
-                            <Tracking event="thirdQuartile"><![CDATA[http://dummyurl.com?network_user_id_macros_test=ROKU_ADS_TRACKING_ID]]></Tracking>
-                            <Tracking event="complete"><![CDATA[http://dummyurl.com?network_user_id_macros_test=ROKU_ADS_TRACKING_ID]]></Tracking>
+                            <Tracking event="start"><![CDATA[http://dummyurl.com/start?network_user_id_macros_test=ROKU_ADS_TRACKING_ID&limit_ad_tracking=ROKU_ADS_LIMIT_TRACKING&user_agent=ROKU_ADS_USER_AGENT&app_version=ROKU_ADS_APP_VERSION&app_id=ROKU_ADS_APP_ID]]></Tracking>
+                            <Tracking event="firstQuartile"><![CDATA[http://dummyurl.com/firstQuartile?network_user_id_macros_test=ROKU_ADS_TRACKING_ID&limit_ad_tracking=ROKU_ADS_LIMIT_TRACKING&user_agent=ROKU_ADS_USER_AGENT&app_version=ROKU_ADS_APP_VERSION&app_id=ROKU_ADS_APP_ID]]></Tracking>
+                            <Tracking event="midpoint"><![CDATA[http://dummyurl.com/secondQuartile?network_user_macros_id_test=ROKU_ADS_TRACKING_ID&limit_ad_tracking=ROKU_ADS_LIMIT_TRACKING&user_agent=ROKU_ADS_USER_AGENT&app_version=ROKU_ADS_APP_VERSION&app_id=ROKU_ADS_APP_ID]]></Tracking>
+                            <Tracking event="thirdQuartile"><![CDATA[http://dummyurl.com/thirdQuartile?network_user_id_macros_test=ROKU_ADS_TRACKING_ID&limit_ad_tracking=ROKU_ADS_LIMIT_TRACKING&user_agent=ROKU_ADS_USER_AGENT&app_version=ROKU_ADS_APP_VERSION&app_id=ROKU_ADS_APP_ID]]></Tracking>
+                            <Tracking event="complete"><![CDATA[http://dummyurl.com/complete?network_user_id_macros_test=ROKU_ADS_TRACKING_ID&limit_ad_tracking=ROKU_ADS_LIMIT_TRACKING&user_agent=ROKU_ADS_USER_AGENT&app_version=ROKU_ADS_APP_VERSION&app_id=ROKU_ADS_APP_ID]]></Tracking>
                         </TrackingEvents>  
                     </Linear>
                 </Creative>
@@ -39,9 +39,10 @@
                             </MediaFile>
                         </MediaFiles>
                         <TrackingEvents>
-                            <Tracking event="firstQuartile"><![CDATA[http://dummyurl.com]]></Tracking>
-                            <Tracking event="midpoint"><![CDATA[http://dummyurl.com]]></Tracking>
-                            <Tracking event="thirdQuartile"><![CDATA[http://dummyurl.com]]></Tracking>
+                            <Tracking event="firstQuartile"><![CDATA[http://dummyurl.com/regularad/first]]></Tracking>
+                            <Tracking event="midpoint"><![CDATA[http://dummyurl.comregularad/second]]></Tracking>
+                            <Tracking event="thirdQuartile"><![CDATA[http://dummyurl.com/regularad/third]]></Tracking>
+                            <Tracking event="complete"><![CDATA[http://dummyurl.com/regularad/fourth]]></Tracking>
                         </TrackingEvents>  
                     </Linear>
                 </Creative>
@@ -66,9 +67,10 @@
                             </MediaFile>
                         </MediaFiles>
                         <TrackingEvents>
-                            <Tracking event="firstQuartile"><![CDATA[http://dummyurl.com]]></Tracking>
-                            <Tracking event="midpoint"><![CDATA[http://dummyurl.com]]></Tracking>
-                            <Tracking event="thirdQuartile"><![CDATA[http://dummyurl.com]]></Tracking>
+                            <Tracking event="firstQuartile"><![CDATA[http://dummyurl.com/regularad2/first]]></Tracking>
+                            <Tracking event="midpoint"><![CDATA[http://dummyurl.comregularad2/second]]></Tracking>
+                            <Tracking event="thirdQuartile"><![CDATA[http://dummyurl.com/regularad2/third]]></Tracking>
+                            <Tracking event="complete"><![CDATA[http://dummyurl.com/regularad2/fourth]]></Tracking>
                         </TrackingEvents>  
                     </Linear>
                 </Creative>
