@@ -40,7 +40,7 @@
                         </MediaFiles>
                         <TrackingEvents>
                             <Tracking event="firstQuartile"><![CDATA[http://dummyurl.com/regularad/first]]></Tracking>
-                            <Tracking event="midpoint"><![CDATA[http://dummyurl.comregularad/second]]></Tracking>
+                            <Tracking event="midpoint"><![CDATA[http://dummyurl.com/regularad/second]]></Tracking>
                             <Tracking event="thirdQuartile"><![CDATA[http://dummyurl.com/regularad/third]]></Tracking>
                             <Tracking event="complete"><![CDATA[http://dummyurl.com/regularad/fourth]]></Tracking>
                         </TrackingEvents>  
@@ -68,7 +68,7 @@
                         </MediaFiles>
                         <TrackingEvents>
                             <Tracking event="firstQuartile"><![CDATA[http://dummyurl.com/regularad2/first]]></Tracking>
-                            <Tracking event="midpoint"><![CDATA[http://dummyurl.comregularad2/second]]></Tracking>
+                            <Tracking event="midpoint"><![CDATA[http://dummyurl.com/regularad2/second]]></Tracking>
                             <Tracking event="thirdQuartile"><![CDATA[http://dummyurl.com/regularad2/third]]></Tracking>
                             <Tracking event="complete"><![CDATA[http://dummyurl.com/regularad2/fourth]]></Tracking>
                         </TrackingEvents>  
