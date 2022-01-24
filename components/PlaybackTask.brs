@@ -234,14 +234,15 @@ function handleAds(ads) as Boolean
                 renderSequence: ads.renderSequence
             }            
 
-            ' Need to delete the ad from the pod which is referenced by raf so it plays
-            ' ads from the correct index when resulting in non-truex flows (eg. opt out)
-            ' If it is not deleted, this pod will attempt to play the truex ad placeholder
-            ' when it is passed into raf.showAds()
+
             m.currentTruexAd = firstAd
             m.currentTruexAd.adPod = m.currentAdPod
             m.currentTruexAd.position = 0
 
+            ' Need to delete the ad from the pod which is referenced by raf so it plays
+            ' ads from the correct index when resulting in non-truex flows (eg. opt out)
+            ' If it is not deleted, this pod will attempt to play the truex ad placeholder
+            ' when it is passed into raf.showAds()
             ads.ads.delete(0)
 
             playTrueXAd(data)
