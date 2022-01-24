@@ -36,6 +36,7 @@ sub setupScopedVariables()
     m.videoPlayer = invalid ' Hold reference to player component from render thread
     m.raf = invalid
     m.currentAdPod = invalid ' Current ad pod in use or processing
+    m.currentTruexAd = invalid ' Holds ad information, currently for raf tracking
 end sub
 
 '-------------------------------------------
