@@ -162,7 +162,7 @@ sub onTruexEvent(event)
         "VIDEOEVENT": "videoEvent"
     }
     
-    rafEvent = invalid
+    rafEventType = invalid
     if eventType = types.ADFREEPOD
         m.skipAds = true
     else if eventType = types.ADCOMPLETED OR eventType = types.NOADSAVAILABLE OR eventType = types.ADERROR
@@ -173,20 +173,27 @@ sub onTruexEvent(event)
         subType = data.subType
 
         if subType = "started"
-            rafEvent = { type: "Impression" }
+            rafEventType = "Impression"
         else if subType = "firstQuartile"
-            rafEvent = { type: "FirstQuartile" }
+            rafEventType = "FirstQuartile"
         else if subType = "secondQuartile"
-            rafEvent = { type: "Midpoint" }
+            rafEventType = "Midpoint"
         else if subType = "thirdQuartile"
-            rafEvent = { type: "ThirdQuartile" }
+            rafEventType = "ThirdQuartile"
         else if subType = "completed"
-            rafEvent = { type: "Complete" }
+            rafEventType = "Complete"
+        else if subType = "paused"
+            rafEventType = "Pause"
+        else if subType = "resumed"
+            rafEventType = "Resume"
+        else if subType = "videoIncomplete"
+            rafEventType = "Close"
         end if
     end if
 
-    if rafEvent <> invalid
-        m.raf.fireTrackingEvents(m.currentTruexAd, rafEvent)
+    if rafEventType <> invalid
+        ' Note the Raf events follow the naming convention as provided by Roku's RAF guidance
+        m.raf.fireTrackingEvents(m.currentTruexAd, { type: rafEventType })
     end if
 end sub
 
@@ -298,7 +305,7 @@ sub playTrueXAd(data)
         adParameters: data.adParameters,
         supportsUserCancelStream: true, ' enables cancelStream event types, disable if Channel does not support
         slotType: ucase(data.rendersequence),
-        logLevel: 1, ' Optional parameter, set the verbosity of true[X] logging, from 0 (mute) to 5 (verbose), defaults to 5
+        logLevel: 5, ' Optional parameter, set the verbosity of true[X] logging, from 0 (mute) to 5 (verbose), defaults to 5
         channelWidth: 1920, ' Optional parameter, set the width in pixels of the channel's interface, defaults to 1920
         channelHeight: 1080 ' Optional parameter, set the height in pixels of the channel's interface, defaults to 1080
     }
