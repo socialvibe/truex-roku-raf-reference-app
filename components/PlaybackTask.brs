@@ -36,6 +36,7 @@ sub setupScopedVariables()
     m.videoPlayer = invalid ' Hold reference to player component from render thread
     m.raf = invalid
     m.currentAdPod = invalid ' Current ad pod in use or processing
+    m.currentTruexAd = invalid ' Holds ad information, currently for raf tracking
 end sub
 
 '-------------------------------------------
@@ -158,15 +159,42 @@ sub onTruexEvent(event)
         "OPTIN": "optIn",   ' User opts in to choice card
         "OPTOUT": "optOut", ' User opts out of choice card
         "USERCANCELSTREAM": "userCancelStream", ' User exits playback. EG. Typically "back" on choice card
-        "SKIPCARDSHOWN": "skipCardShown"
+        "SKIPCARDSHOWN": "skipCardShown",
+        "VIDEOEVENT": "videoEvent"
     }
-
+    
+    rafEventType = invalid
     if eventType = types.ADFREEPOD
         m.skipAds = true
     else if eventType = types.ADCOMPLETED OR eventType = types.NOADSAVAILABLE OR eventType = types.ADERROR
         playContentStream()
     else if eventType = types.USERCANCELSTREAM
         exitContentStream()
+    else if eventType = types.VIDEOEVENT
+        subType = data.subType
+
+        if subType = "started"
+            rafEventType = "Impression"
+        else if subType = "firstQuartile"
+            rafEventType = "FirstQuartile"
+        else if subType = "secondQuartile"
+            rafEventType = "Midpoint"
+        else if subType = "thirdQuartile"
+            rafEventType = "ThirdQuartile"
+        else if subType = "completed"
+            rafEventType = "Complete"
+        else if subType = "paused"
+            rafEventType = "Pause"
+        else if subType = "resumed"
+            rafEventType = "Resume"
+        else if subType = "incomplete"
+            rafEventType = "Close"
+        end if
+    end if
+
+    if rafEventType <> invalid
+        ' Note the Raf events follow the naming convention as provided by Roku's RAF guidance
+        m.raf.fireTrackingEvents(m.currentTruexAd, { type: rafEventType })
     end if
 end sub
 
@@ -213,6 +241,11 @@ function handleAds(ads) as Boolean
                 adParameters: parseJSON(firstAd.adParameters),
                 renderSequence: ads.renderSequence
             }            
+
+
+            m.currentTruexAd = firstAd
+            m.currentTruexAd.adPod = m.currentAdPod
+            m.currentTruexAd.position = 0
 
             ' Need to delete the ad from the pod which is referenced by raf so it plays
             ' ads from the correct index when resulting in non-truex flows (eg. opt out)
@@ -342,6 +375,7 @@ end sub
 '-----------------------------------------
 sub cleanUpAdRenderer()
     ? "TRUE[X] >>> PlaybackTask::cleanUpAdRenderer(): "
+    m.currentTruexAd = invalid
     if m.adRenderer <> invalid then
         m.adRenderer.SetFocus(false)
         m.adRenderer.unobserveFieldScoped("event")
