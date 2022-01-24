@@ -187,7 +187,7 @@ sub onTruexEvent(event)
             rafEventType = "Pause"
         else if subType = "resumed"
             rafEventType = "Resume"
-        else if subType = "videoIncomplete"
+        else if subType = "incomplete"
             rafEventType = "Close"
         end if
     end if
@@ -306,7 +306,7 @@ sub playTrueXAd(data)
         adParameters: data.adParameters,
         supportsUserCancelStream: true, ' enables cancelStream event types, disable if Channel does not support
         slotType: ucase(data.rendersequence),
-        logLevel: 5, ' Optional parameter, set the verbosity of true[X] logging, from 0 (mute) to 5 (verbose), defaults to 5
+        logLevel: 1, ' Optional parameter, set the verbosity of true[X] logging, from 0 (mute) to 5 (verbose), defaults to 5
         channelWidth: 1920, ' Optional parameter, set the width in pixels of the channel's interface, defaults to 1920
         channelHeight: 1080 ' Optional parameter, set the height in pixels of the channel's interface, defaults to 1080
     }
