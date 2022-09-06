@@ -5,7 +5,7 @@
             <AdSystem>trueX</AdSystem>
             <AdTitle>true[X] Interactive Ad</AdTitle>
             <Description>Interactive ad from true[X]</Description>
-            <VASTAdTagURI><![CDATA[http://get.truex.com/f10e25d796a25c294dc308f2b5f916cdd3d670e9/vast?dimension_2=1&dimension_5=evergreen&stream_position=midroll&network_user_id=ROKU_ADS_TRACKING_ID]]></VASTAdTagURI>
+            <VASTAdTagURI><![CDATA[http://get.truex.com/74fca63c733f098340b0a70489035d683024440d/vast?dimension_2=1&dimension_5=evergreen&stream_position=midroll&network_user_id=ROKU_ADS_TRACKING_ID]]></VASTAdTagURI>
             <Impression></Impression>
             <Creatives></Creatives>
         </Wrapper>
